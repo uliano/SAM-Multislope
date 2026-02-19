@@ -1,0 +1,5 @@
+{
+  "terminal.integrated.env.windows": {
+    "PLATFORMIO_CORE_DIR": "${workspaceFolder}\\.pio-core"
+  }
+}
