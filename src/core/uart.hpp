@@ -89,7 +89,8 @@ struct UartPinout
 
   static inline void apply(void)
   {
-    TxPin::as_output();
+    // Keep UART TX at idle level while switching pin mux to avoid spurious bytes.
+    TxPin::as_output(true);
     TxPin::set_peripheral(peripheral());
     RxPin::as_input();
     RxPin::set_peripheral(peripheral());

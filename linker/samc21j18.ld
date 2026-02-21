@@ -37,6 +37,12 @@ __top_ram = ORIGIN(ram) + LENGTH(ram);
 
 ENTRY(irq_handler_reset)
 
+PHDRS
+{
+  text PT_LOAD FLAGS(5); /* PF_R | PF_X */
+  data PT_LOAD FLAGS(6); /* PF_R | PF_W */
+}
+
 SECTIONS
 {
   .text : ALIGN(4)
@@ -47,7 +53,40 @@ SECTIONS
     *(.rodata)
     *(.rodata.*)
     . = ALIGN(4);
-  } > flash
+  } > flash :text
+
+  .init : ALIGN(4)
+  {
+    KEEP(*(SORT_NONE(.init)))
+  } > flash :text
+
+  .fini : ALIGN(4)
+  {
+    KEEP(*(SORT_NONE(.fini)))
+  } > flash :text
+
+  .preinit_array : ALIGN(4)
+  {
+    PROVIDE_HIDDEN(__preinit_array_start = .);
+    KEEP(*(.preinit_array*))
+    PROVIDE_HIDDEN(__preinit_array_end = .);
+  } > flash :text
+
+  .init_array : ALIGN(4)
+  {
+    PROVIDE_HIDDEN(__init_array_start = .);
+    KEEP(*(SORT(.init_array.*)))
+    KEEP(*(.init_array*))
+    PROVIDE_HIDDEN(__init_array_end = .);
+  } > flash :text
+
+  .fini_array : ALIGN(4)
+  {
+    PROVIDE_HIDDEN(__fini_array_start = .);
+    KEEP(*(SORT(.fini_array.*)))
+    KEEP(*(.fini_array*))
+    PROVIDE_HIDDEN(__fini_array_end = .);
+  } > flash :text
 
   . = ALIGN(4);
   _etext = .;
@@ -55,7 +94,7 @@ SECTIONS
   .uninit_RESERVED : ALIGN(4)
   {
     KEEP(*(.bss.$RESERVED*))
-  } > ram
+  } > ram :data
 
   .data : ALIGN(4)
   {
@@ -66,7 +105,7 @@ SECTIONS
     *(.data*)
     . = ALIGN(4);
     _edata = .;
-  } > ram AT > flash
+  } > ram AT > flash :data
 
   .bss : ALIGN(4)
   {
@@ -76,7 +115,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;
     PROVIDE(_end = .);
-  } > ram
+  } > ram :data
 
   PROVIDE(_stack_top = __top_ram - 0);
 }

@@ -32,79 +32,28 @@
 #include <stdbool.h>
 #include <string.h>
 #include "samc21.h"
+#include "line_reader.hpp"
 #include "pin.hpp"
-#include "globals.hpp"
+#include "serial.hpp"
+#include "timebase.hpp"
 
 //-----------------------------------------------------------------------------
 #define PERIOD_FAST     100
 #define PERIOD_SLOW     500
+#define BUTTON_DEBOUNCE_MS  30
 
 using LedPin = sam::gpio::Pin<sam::gpio::Bank::A, 15>;
 using ButtonPin = sam::gpio::Pin<sam::gpio::Bank::A, 28>;
 
-//-----------------------------------------------------------------------------
-static void timer_set_period(uint16_t i)
+// SW0 on Xplained Pro is wired active-low (pressed = 0) with pull-up.
+static inline bool button_pressed(void)
 {
-  TC3->COUNT16.CC[0].reg = (F_CPU / 1000ul / 1024) * i;
-  TC3->COUNT16.COUNT.reg = 0;
+  return !ButtonPin::read();
 }
 
-//-----------------------------------------------------------------------------
-extern "C" void irq_handler_tc3(void)
+static inline bool streq(const char *a, const char *b)
 {
-  if (TC3->COUNT16.INTFLAG.reg & TC_INTFLAG_MC(1))
-  {
-    LedPin::toggle();
-    TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);
-  }
-}
-
-//-----------------------------------------------------------------------------
-extern "C" void irq_handler_sercom4(void)
-{
-  g_uart.irq_handler();
-}
-
-//-----------------------------------------------------------------------------
-static void timer_init(void)
-{
-  MCLK->APBCMASK.reg |= MCLK_APBCMASK_TC3;
-
-  GCLK->PCHCTRL[TC3_GCLK_ID].reg = GCLK_PCHCTRL_GEN(0) | GCLK_PCHCTRL_CHEN;
-  while (0 == (GCLK->PCHCTRL[TC3_GCLK_ID].reg & GCLK_PCHCTRL_CHEN));
-
-  TC3->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER_DIV1024 |
-      TC_CTRLA_PRESCSYNC_RESYNC;
-
-  TC3->COUNT16.WAVE.reg = TC_WAVE_WAVEGEN_MFRQ;
-
-  TC3->COUNT16.COUNT.reg = 0;
-
-  timer_set_period(PERIOD_SLOW);
-
-  TC3->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;
-
-  TC3->COUNT16.INTENSET.reg = TC_INTENSET_MC(1);
-
-  NVIC_EnableIRQ(TC3_IRQn);
-}
-
-//-----------------------------------------------------------------------------
-static void uart_init(uint32_t baud)
-{
-  g_uart.init(baud);
-}
-
-//-----------------------------------------------------------------------------
-static void uart_putc(char c)
-{
-  g_uart.write_blocking((uint8_t)c);
-}
-
-//-----------------------------------------------------------------------------
-static void uart_puts(const char *s)
-{
-  g_uart.write_blocking(s);
+  return 0 == strcmp(a, b);
 }
 
 //-----------------------------------------------------------------------------
@@ -121,32 +70,123 @@ static void sys_init(void)
 //-----------------------------------------------------------------------------
 int main(void)
 {
-  uint32_t cnt = 0;
   bool fast = false;
+  bool button_raw = false;
+  bool button_debounced = false;
+  char cli_buffer[64];
+  LineReader cli(cli_buffer, sizeof(cli_buffer));
+  uint32_t blink_period = PERIOD_SLOW;
+  uint32_t last_blink_ms = 0;
+  uint32_t button_change_ms = 0;
 
   sys_init();
-  timer_init();
-  uart_init(115200);
+  Timebase::init();
+  Serial::init(115200);
 
-  uart_puts("\r\nHello, world!\r\n");
+  Serial::newline();
+  Serial::print("Hello, world!");
+  Serial::newline();
+  Serial::print("Type 'help' then ENTER.");
+  Serial::newline();
+  Serial::print("> ");
 
   LedPin::as_output();
   LedPin::clear();
 
   ButtonPin::as_input(sam::gpio::Pull::Up);
+  button_raw = button_pressed();
+  button_debounced = button_raw;
+  last_blink_ms = Timebase::millis();
+  button_change_ms = last_blink_ms;
 
   while (1)
   {
-    if (ButtonPin::read())
-      cnt = 0;
-    else if (cnt < 5001)
-      cnt++;
+    uint32_t now = Timebase::millis();
+    bool raw_now = button_pressed();
+    LineReader::PollResult cli_result = cli.poll();
 
-    if (5000 == cnt)
+    if (LineReader::Status::Ready == cli_result.status)
     {
-      fast = !fast;
-      timer_set_period(fast ? PERIOD_FAST : PERIOD_SLOW);
-      uart_putc('.');
+      const char *cmd = cli.c_str();
+
+      if (streq(cmd, "help"))
+      {
+        Serial::print("Commands: help, status, fast, slow");
+        Serial::newline();
+      }
+      else if (streq(cmd, "status"))
+      {
+        Serial::print("mode=");
+        Serial::print(fast ? "fast" : "slow");
+        Serial::print(" period_ms=");
+        Serial::print((uint32_t)blink_period);
+        Serial::print(" uptime_ms=");
+        Serial::print(Timebase::millis());
+        Serial::newline();
+      }
+      else if (streq(cmd, "fast"))
+      {
+        fast = true;
+        blink_period = PERIOD_FAST;
+        Serial::print("Blink mode: FAST");
+        Serial::newline();
+      }
+      else if (streq(cmd, "slow"))
+      {
+        fast = false;
+        blink_period = PERIOD_SLOW;
+        Serial::print("Blink mode: SLOW");
+        Serial::newline();
+      }
+      else if (cmd[0] != '\0')
+      {
+        Serial::print("Unknown command: ");
+        Serial::print(cmd);
+        Serial::newline();
+      }
+
+      cli.consume_line();
+      Serial::print("> ");
+    }
+    else if (LineReader::Status::Overflow == cli_result.status)
+    {
+      Serial::print("ERR: line too long");
+      Serial::newline();
+      cli.consume_line();
+      Serial::print("> ");
+    }
+    else if (LineReader::Status::Timeout == cli_result.status)
+    {
+      Serial::newline();
+      Serial::print("ERR: input timeout");
+      Serial::newline();
+      cli.consume_line();
+      Serial::print("> ");
+    }
+
+    if (raw_now != button_raw)
+    {
+      button_raw = raw_now;
+      button_change_ms = now;
+    }
+
+    if ((button_debounced != button_raw) &&
+        ((uint32_t)(now - button_change_ms) >= BUTTON_DEBOUNCE_MS))
+    {
+      button_debounced = button_raw;
+
+      if (button_debounced)
+      {
+        fast = !fast;
+        blink_period = fast ? PERIOD_FAST : PERIOD_SLOW;
+        Serial::print(".");
+      }
+    }
+
+    if ((uint32_t)(now - last_blink_ms) >= blink_period)
+    {
+      last_blink_ms += blink_period;
+      LedPin::toggle();
     }
   }
 

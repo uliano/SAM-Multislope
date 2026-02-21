@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <sys/stat.h>
 
-#include "globals.hpp"
+#include "serial.hpp"
 
 extern "C" int _write(int file, const void *ptr, size_t len)
 {
@@ -13,15 +13,10 @@ extern "C" int _write(int file, const void *ptr, size_t len)
     return -1;
   }
 
-  if (!g_uart.is_initialized())
+  if (!Serial::ready())
     return (int)len;
 
-  const uint8_t *data = (const uint8_t *)ptr;
-
-  for (size_t i = 0; i < len; i++)
-    g_uart.write_blocking(data[i]);
-
-  return (int)len;
+  return (int)Serial::write((const uint8_t *)ptr, len);
 }
 
 extern "C" int _read(int file, void *ptr, size_t len)
@@ -32,22 +27,10 @@ extern "C" int _read(int file, void *ptr, size_t len)
     return -1;
   }
 
-  if ((0 == len) || !g_uart.is_initialized())
+  if ((0 == len) || !Serial::ready())
     return 0;
 
-  uint8_t *data = (uint8_t *)ptr;
-  size_t count = 0;
-  uint8_t value = 0;
-
-  while (count < len)
-  {
-    if (!g_uart.read(value))
-      break;
-
-    data[count++] = value;
-  }
-
-  return (int)count;
+  return (int)Serial::read((uint8_t *)ptr, len);
 }
 
 extern "C" int _close(int file)

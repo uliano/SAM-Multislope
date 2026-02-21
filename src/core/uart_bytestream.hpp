@@ -7,7 +7,7 @@
 #include "bytestream.hpp"
 
 template <typename UartT>
-class UartByteStream
+class UartByteStream : public ByteStreamPrintMixin<UartByteStream<UartT>>
 {
 public:
   explicit UartByteStream(UartT& uart) : uart_(uart)
@@ -65,4 +65,3 @@ private:
 };
 
 #endif // _UART_BYTESTREAM_HPP_
-

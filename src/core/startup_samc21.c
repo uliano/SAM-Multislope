@@ -73,6 +73,7 @@ DUMMY void irq_handler_sdadc(void);
 DUMMY void irq_handler_ptc(void);
 
 extern int main(void);
+extern void __libc_init_array(void);
 
 extern void _stack_top(void);
 extern unsigned int _etext;
@@ -151,6 +152,8 @@ void irq_handler_reset(void)
   dst = &_bss;
   while (dst < &_ebss)
     *dst++ = 0;
+
+  __libc_init_array();
 
   SCB->VTOR = (uint32_t)vectors;
 
