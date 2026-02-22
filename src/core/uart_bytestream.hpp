@@ -35,7 +35,7 @@ public:
     return count;
   }
 
-  size_t available(void) const
+  size_t available(void)
   {
     return uart_.available();
   }

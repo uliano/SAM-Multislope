@@ -21,6 +21,7 @@ public:
   static bool read_char(char& out);
 
   static void irq_handler(void);
+  static void dma_irq_handler(void);
 
   static size_t print(const char *text);
   static size_t print(uint8_t value, PrintBase base = PrintBase::Dec);
@@ -36,7 +37,7 @@ public:
 private:
   using UartTraits = SercomTraits<4>;
   using UartPinoutType = ::UartPinout<UartTxPin, UartRxPin, sam::gpio::Peripheral::D, 1, 3>;
-  using UartType = UartINT<UartTraits, UartPinoutType, 8, 8>;
+  using UartType = UartDMA<UartTraits, UartPinoutType, 8, 8>;
   using StreamType = UartByteStream<UartType>;
 
   static UartType uart_;

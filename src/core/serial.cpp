@@ -73,6 +73,12 @@ void Serial::irq_handler(void)
     uart_instance().irq_handler();
 }
 
+void Serial::dma_irq_handler(void)
+{
+  if (ready())
+    uart_instance().dma_irq_handler();
+}
+
 size_t Serial::print(const char *text)
 {
   if (!ready())
