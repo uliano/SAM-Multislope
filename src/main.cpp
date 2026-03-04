@@ -32,6 +32,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "samc21.h"
+#include "heartbeat.hpp"
 #include "line_reader.hpp"
 #include "pin.hpp"
 #include "serial.hpp"
@@ -80,6 +81,7 @@ int main(void)
   uint32_t button_change_ms = 0;
 
   sys_init();
+  Heartbeat::init();
   Timebase::init();
   Serial.init(115200);
 
