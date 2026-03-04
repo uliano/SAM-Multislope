@@ -32,6 +32,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "samc21.h"
+#include "ac.hpp"
 #include "heartbeat.hpp"
 #include "line_reader.hpp"
 #include "pin.hpp"
@@ -82,6 +83,7 @@ int main(void)
 
   sys_init();
   Heartbeat::init();
+  ACMP::init();
   Timebase::init();
   Serial.init(115200);
 
@@ -113,7 +115,19 @@ int main(void)
 
       if (streq(cmd, "help"))
       {
-        Serial.print("Commands: help, status, fast, slow");
+        Serial.print("Commands: help, status, fast, slow, acstat");
+        Serial.newline();
+      }
+      else if (streq(cmd, "acstat"))
+      {
+        Serial.print("STATUSA=");
+        Serial.print((uint32_t)AC->STATUSA.reg, PrintBase::Hex);
+        Serial.print(" STATE0=");
+        Serial.print((uint32_t)((AC->STATUSA.reg >> AC_STATUSA_STATE0_Pos) & 1));
+        Serial.print(" COMPCTRL0=");
+        Serial.print((uint32_t)AC->COMPCTRL[0].reg, PrintBase::Hex);
+        Serial.print(" SYNCBUSY=");
+        Serial.print((uint32_t)AC->SYNCBUSY.reg, PrintBase::Hex);
         Serial.newline();
       }
       else if (streq(cmd, "status"))
