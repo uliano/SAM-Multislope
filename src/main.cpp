@@ -122,10 +122,10 @@ int main(void)
       {
         Serial.print("STATUSA=");
         Serial.print((uint32_t)AC->STATUSA.reg, PrintBase::Hex);
-        Serial.print(" STATE0=");
-        Serial.print((uint32_t)((AC->STATUSA.reg >> AC_STATUSA_STATE0_Pos) & 1));
-        Serial.print(" COMPCTRL0=");
-        Serial.print((uint32_t)AC->COMPCTRL[0].reg, PrintBase::Hex);
+        Serial.print(" STATE2=");
+        Serial.print((uint32_t)((AC->STATUSA.reg >> AC_STATUSA_STATE2_Pos) & 1));
+        Serial.print(" COMPCTRL2=");
+        Serial.print((uint32_t)AC->COMPCTRL[2].reg, PrintBase::Hex);
         Serial.print(" SYNCBUSY=");
         Serial.print((uint32_t)AC->SYNCBUSY.reg, PrintBase::Hex);
         Serial.newline();

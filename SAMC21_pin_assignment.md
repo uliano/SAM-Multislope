@@ -12,7 +12,8 @@
 | Funzione | Pin | Note |
 |--------|-----|------|
 | ADC (unico ingresso) | PA02 | unico AIN usato |
-| AC interno | PA12 | CMP, pin distinto dall’ADC |
+| AC input   | PB06 | AIN7, COMPCTRL[2] MUXPOS=PIN3 |
+| AC output  | PB30 | CMP2, mux H |
 | Freq rete (digitale) | PA27 | da comparatore esterno → EIC/EVSYS |
 
 ## Timer / CCL (core logica)
