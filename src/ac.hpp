@@ -59,13 +59,13 @@ struct ACMP
     //    MUXPOS = PIN3   → AIN7 = PB06
     //    MUXNEG = VSCALE → VDD/2 from SCALER[2]
     //    SPEED  = HIGH   → required for fast response
-    //    FLEN   = OFF    → no filter (NOTE: SYNC output requires FLEN > 0)
-    //    OUT    = ASYNC  → immediate output (~ns delay)
+    //    FLEN   = MAJ3   → majority vote of 3 GCLK samples (latency ≤ 3 × 2.67 µs = 8 µs)
+    //    OUT    = SYNC   → registered on GCLK1 edge (375 kHz); no ext. DFF needed
     AC->COMPCTRL[2].reg = AC_COMPCTRL_MUXPOS_PIN3
                         | AC_COMPCTRL_MUXNEG_VSCALE
                         | AC_COMPCTRL_SPEED_HIGH
-                        | AC_COMPCTRL_FLEN_OFF
-                        | AC_COMPCTRL_OUT_ASYNC
+                        | AC_COMPCTRL_FLEN_MAJ3
+                        | AC_COMPCTRL_OUT_SYNC
                         | AC_COMPCTRL_ENABLE;
     while (AC->SYNCBUSY.reg & AC_SYNCBUSY_COMPCTRL2);
   }
