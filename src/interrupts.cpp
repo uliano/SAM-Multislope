@@ -3,7 +3,7 @@
 
 extern "C" void irq_handler_sercom4(void)
 {
-  Serial::irq_handler();
+  Serial.irq_handler();
 }
 
 extern "C" void irq_handler_sys_tick(void)

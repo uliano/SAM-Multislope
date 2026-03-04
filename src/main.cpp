@@ -74,21 +74,21 @@ int main(void)
   bool button_raw = false;
   bool button_debounced = false;
   char cli_buffer[64];
-  LineReader cli(cli_buffer, sizeof(cli_buffer));
+  LineReader<SerialType> cli(Serial, cli_buffer, sizeof(cli_buffer));
   uint32_t blink_period = PERIOD_SLOW;
   uint32_t last_blink_ms = 0;
   uint32_t button_change_ms = 0;
 
   sys_init();
   Timebase::init();
-  Serial::init(115200);
+  Serial.init(115200);
 
-  Serial::newline();
-  Serial::print("Hello, world!");
-  Serial::newline();
-  Serial::print("Type 'help' then ENTER.");
-  Serial::newline();
-  Serial::print("> ");
+  Serial.newline();
+  Serial.print("Hello, world!");
+  Serial.newline();
+  Serial.print("Type 'help' then ENTER.");
+  Serial.newline();
+  Serial.print("> ");
 
   LedPin::as_output();
   LedPin::clear();
@@ -103,65 +103,65 @@ int main(void)
   {
     uint32_t now = Timebase::millis();
     bool raw_now = button_pressed();
-    LineReader::PollResult cli_result = cli.poll();
+    auto cli_result = cli.poll();
 
-    if (LineReader::Status::Ready == cli_result.status)
+    if (LineReader<SerialType>::Status::Ready == cli_result.status)
     {
       const char *cmd = cli.c_str();
 
       if (streq(cmd, "help"))
       {
-        Serial::print("Commands: help, status, fast, slow");
-        Serial::newline();
+        Serial.print("Commands: help, status, fast, slow");
+        Serial.newline();
       }
       else if (streq(cmd, "status"))
       {
-        Serial::print("mode=");
-        Serial::print(fast ? "fast" : "slow");
-        Serial::print(" period_ms=");
-        Serial::print((uint32_t)blink_period);
-        Serial::print(" uptime_ms=");
-        Serial::print(Timebase::millis());
-        Serial::newline();
+        Serial.print("mode=");
+        Serial.print(fast ? "fast" : "slow");
+        Serial.print(" period_ms=");
+        Serial.print((uint32_t)blink_period);
+        Serial.print(" uptime_ms=");
+        Serial.print(Timebase::millis());
+        Serial.newline();
       }
       else if (streq(cmd, "fast"))
       {
         fast = true;
         blink_period = PERIOD_FAST;
-        Serial::print("Blink mode: FAST");
-        Serial::newline();
+        Serial.print("Blink mode: FAST");
+        Serial.newline();
       }
       else if (streq(cmd, "slow"))
       {
         fast = false;
         blink_period = PERIOD_SLOW;
-        Serial::print("Blink mode: SLOW");
-        Serial::newline();
+        Serial.print("Blink mode: SLOW");
+        Serial.newline();
       }
       else if (cmd[0] != '\0')
       {
-        Serial::print("Unknown command: ");
-        Serial::print(cmd);
-        Serial::newline();
+        Serial.print("Unknown command: ");
+        Serial.print(cmd);
+        Serial.newline();
       }
 
       cli.consume_line();
-      Serial::print("> ");
+      Serial.print("> ");
     }
-    else if (LineReader::Status::Overflow == cli_result.status)
+    else if (LineReader<SerialType>::Status::Overflow == cli_result.status)
     {
-      Serial::print("ERR: line too long");
-      Serial::newline();
+      Serial.print("ERR: line too long");
+      Serial.newline();
       cli.consume_line();
-      Serial::print("> ");
+      Serial.print("> ");
     }
-    else if (LineReader::Status::Timeout == cli_result.status)
+    else if (LineReader<SerialType>::Status::Timeout == cli_result.status)
     {
-      Serial::newline();
-      Serial::print("ERR: input timeout");
-      Serial::newline();
+      Serial.newline();
+      Serial.print("ERR: input timeout");
+      Serial.newline();
       cli.consume_line();
-      Serial::print("> ");
+      Serial.print("> ");
     }
 
     if (raw_now != button_raw)
@@ -179,7 +179,7 @@ int main(void)
       {
         fast = !fast;
         blink_period = fast ? PERIOD_FAST : PERIOD_SLOW;
-        Serial::print(".");
+        Serial.print(".");
       }
     }
 

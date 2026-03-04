@@ -1,5 +1,5 @@
-#ifndef _UART_BYTESTREAM_HPP_
-#define _UART_BYTESTREAM_HPP_
+#ifndef _SERIAL_PORT_HPP_
+#define _SERIAL_PORT_HPP_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -7,13 +7,22 @@
 #include "bytestream.hpp"
 
 template <typename UartT>
-class UartByteStream : public ByteStreamPrintMixin<UartByteStream<UartT>>
+class SerialPort : public ByteStreamPrintMixin<SerialPort<UartT>>
 {
 public:
-  explicit UartByteStream(UartT& uart) : uart_(uart)
+  SerialPort() = default;
+
+  void init(uint32_t baud, uint8_t gclk = 0)
   {
+    uart_.init(baud, gclk);
   }
 
+  bool ready() const
+  {
+    return uart_.is_initialized();
+  }
+
+  // ByteStream interface
   size_t write(const uint8_t *data, size_t size)
   {
     return uart_.write(data, size);
@@ -35,33 +44,23 @@ public:
     return count;
   }
 
-  size_t available(void) const
+  size_t available()
   {
     return uart_.available();
   }
 
-  bool ready(void) const
-  {
-    return uart_.is_initialized();
-  }
-
-  void flush(void) const
+  void flush()
   {
     while (!uart_.tx_idle());
   }
 
-  UartT& uart(void)
+  void irq_handler()
   {
-    return uart_;
-  }
-
-  const UartT& uart(void) const
-  {
-    return uart_;
+    uart_.irq_handler();
   }
 
 private:
-  UartT& uart_;
+  UartT uart_;
 };
 
-#endif // _UART_BYTESTREAM_HPP_
+#endif // _SERIAL_PORT_HPP_

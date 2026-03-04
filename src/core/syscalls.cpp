@@ -13,10 +13,10 @@ extern "C" int _write(int file, const void *ptr, size_t len)
     return -1;
   }
 
-  if (!Serial::ready())
+  if (!Serial.ready())
     return (int)len;
 
-  return (int)Serial::write((const uint8_t *)ptr, len);
+  return (int)Serial.write((const uint8_t *)ptr, len);
 }
 
 extern "C" int _read(int file, void *ptr, size_t len)
@@ -27,10 +27,10 @@ extern "C" int _read(int file, void *ptr, size_t len)
     return -1;
   }
 
-  if ((0 == len) || !Serial::ready())
+  if ((0 == len) || !Serial.ready())
     return 0;
 
-  return (int)Serial::read((uint8_t *)ptr, len);
+  return (int)Serial.read((uint8_t *)ptr, len);
 }
 
 extern "C" int _close(int file)
