@@ -6,8 +6,8 @@
 #include "pins.hpp"
 
 using SerialType = SerialPort<
-  UartINT<SercomTraits<4>,
-          UartPinout<UartTxPin, UartRxPin, sam::gpio::Peripheral::D, 1, 3>,
+  UartINT<SercomTraits<5>,
+          UartPinout<UartTxPin, UartRxPin, sam::gpio::Peripheral::D, 0, 1>,
           8, 8>>;
 
 extern SerialType Serial;

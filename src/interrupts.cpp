@@ -1,7 +1,7 @@
 #include "serial.hpp"
 #include "timebase.hpp"
 
-extern "C" void irq_handler_sercom4(void)
+extern "C" void irq_handler_sercom5(void)
 {
   Serial.irq_handler();
 }

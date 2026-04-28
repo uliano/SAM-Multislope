@@ -3,15 +3,16 @@
 
 #include "pin.hpp"
 
-using UartTxPin = sam::gpio::Pin<sam::gpio::Bank::B, 10>;
-using UartRxPin = sam::gpio::Pin<sam::gpio::Bank::B, 11>;
+// UART→USB bridge (CH340 or similar) → COM5
+using UartTxPin = sam::gpio::Pin<sam::gpio::Bank::B, 30>;
+using UartRxPin = sam::gpio::Pin<sam::gpio::Bank::B, 31>;
 
-using Hb0Pin = sam::gpio::Pin<sam::gpio::Bank::A,  8>;  // TCC0 WO[0] 50%   mux E
-using Hb1Pin = sam::gpio::Pin<sam::gpio::Bank::A,  9>;  // TCC0 WO[1] 1/8   mux E
-using Hb2Pin = sam::gpio::Pin<sam::gpio::Bank::A, 10>;  // TCC0 WO[2] 7/8   mux F
+// Current bench jumper: active-high LED.
+using Led0Pin = sam::gpio::Pin<sam::gpio::Bank::B, 23>;
 
-using AcPosPin = sam::gpio::Pin<sam::gpio::Bank::B,  6>;  // AC AIN7   mux B  (COMPCTRL[2] PIN3)
-using AcOutPin = sam::gpio::Pin<sam::gpio::Bank::B, 30>;  // AC CMP2   mux H
+// Current bench jumper: active-high button with external pull-down.
+using Btn0Pin = sam::gpio::Pin<sam::gpio::Bank::B, 22>;
+
 
 #endif // _PINS_HPP_
 
