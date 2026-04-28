@@ -21,6 +21,8 @@ struct SercomTraits<0>
   static constexpr IRQn_Type irqn = SERCOM0_IRQn;
   static constexpr uint32_t apb_mask = MCLK_APBCMASK_SERCOM0;
   static constexpr uint8_t gclk_id_core = SERCOM0_GCLK_ID_CORE;
+  static constexpr uint8_t dmac_id_rx = SERCOM0_DMAC_ID_RX;
+  static constexpr uint8_t dmac_id_tx = SERCOM0_DMAC_ID_TX;
 };
 
 template <>
@@ -30,6 +32,8 @@ struct SercomTraits<1>
   static constexpr IRQn_Type irqn = SERCOM1_IRQn;
   static constexpr uint32_t apb_mask = MCLK_APBCMASK_SERCOM1;
   static constexpr uint8_t gclk_id_core = SERCOM1_GCLK_ID_CORE;
+  static constexpr uint8_t dmac_id_rx = SERCOM1_DMAC_ID_RX;
+  static constexpr uint8_t dmac_id_tx = SERCOM1_DMAC_ID_TX;
 };
 
 template <>
@@ -39,6 +43,8 @@ struct SercomTraits<2>
   static constexpr IRQn_Type irqn = SERCOM2_IRQn;
   static constexpr uint32_t apb_mask = MCLK_APBCMASK_SERCOM2;
   static constexpr uint8_t gclk_id_core = SERCOM2_GCLK_ID_CORE;
+  static constexpr uint8_t dmac_id_rx = SERCOM2_DMAC_ID_RX;
+  static constexpr uint8_t dmac_id_tx = SERCOM2_DMAC_ID_TX;
 };
 
 template <>
@@ -48,6 +54,8 @@ struct SercomTraits<3>
   static constexpr IRQn_Type irqn = SERCOM3_IRQn;
   static constexpr uint32_t apb_mask = MCLK_APBCMASK_SERCOM3;
   static constexpr uint8_t gclk_id_core = SERCOM3_GCLK_ID_CORE;
+  static constexpr uint8_t dmac_id_rx = SERCOM3_DMAC_ID_RX;
+  static constexpr uint8_t dmac_id_tx = SERCOM3_DMAC_ID_TX;
 };
 
 template <>
@@ -57,6 +65,8 @@ struct SercomTraits<4>
   static constexpr IRQn_Type irqn = SERCOM4_IRQn;
   static constexpr uint32_t apb_mask = MCLK_APBCMASK_SERCOM4;
   static constexpr uint8_t gclk_id_core = SERCOM4_GCLK_ID_CORE;
+  static constexpr uint8_t dmac_id_rx = SERCOM4_DMAC_ID_RX;
+  static constexpr uint8_t dmac_id_tx = SERCOM4_DMAC_ID_TX;
 };
 
 template <>
@@ -66,6 +76,8 @@ struct SercomTraits<5>
   static constexpr IRQn_Type irqn = SERCOM5_IRQn;
   static constexpr uint32_t apb_mask = MCLK_APBCMASK_SERCOM5;
   static constexpr uint8_t gclk_id_core = SERCOM5_GCLK_ID_CORE;
+  static constexpr uint8_t dmac_id_rx = SERCOM5_DMAC_ID_RX;
+  static constexpr uint8_t dmac_id_tx = SERCOM5_DMAC_ID_TX;
 };
 
 template <
@@ -103,6 +115,10 @@ class Uart;
 template <typename Traits, typename Pinout, uint8_t RxN = 8, uint8_t TxN = 8>
 using UartINT = Uart<UartMode::Interrupt, Traits, Pinout, RxN, TxN>;
 
+template <typename Traits, typename Pinout, uint8_t RxN = 8, uint8_t TxN = 8>
+using UartDMA = Uart<UartMode::Dma, Traits, Pinout, RxN, TxN>;
+
 #include "uart_int.hpp"
+#include "uart_dma.hpp"
 
 #endif // _UART_HPP_

@@ -144,7 +144,7 @@ public:
     return ok;
   }
 
-  size_t available(void) const
+  size_t available(void)
   {
     uint32_t irq_state = irq_lock();
     size_t n = rx_.size();
@@ -226,6 +226,10 @@ public:
         u.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
       }
     }
+  }
+
+  void dma_irq_handler(void)
+  {
   }
 
 private:

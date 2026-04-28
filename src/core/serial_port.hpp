@@ -44,7 +44,7 @@ public:
     return count;
   }
 
-  size_t available()
+  size_t available(void)
   {
     return uart_.available();
   }
